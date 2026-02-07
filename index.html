@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Argent de Poche - Abbie & Aston</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .kids-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .kid-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .kid-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .kid-name {
+            font-size: 1.8em;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .balance {
+            font-size: 2em;
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            flex: 1;
+        }
+        
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .btn-add {
+            background: #2ecc71;
+        }
+        
+        .btn-add:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+        
+        .btn-remove {
+            background: #e74c3c;
+        }
+        
+        .btn-remove:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+        
+        .btn-interest {
+            background: #f39c12;
+            grid-column: 1 / -1;
+        }
+        
+        .btn-interest:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+        
+        .interest-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .interest-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .history {
+            margin-top: 20px;
+        }
+        
+        .history h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .history-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .history-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .history-info {
+            flex: 1;
+        }
+        
+        .history-date {
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+        
+        .history-description {
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .history-amount {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .amount-positive {
+            color: #2ecc71;
+        }
+        
+        .amount-negative {
+            color: #e74c3c;
+        }
+        
+        .history-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.9em;
+            width: auto;
+        }
+        
+        .btn-edit {
+            background: #3498db;
+        }
+        
+        .btn-edit:hover {
+            background: #2980b9;
+        }
+        
+        .btn-delete {
+            background: #e74c3c;
+        }
+        
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .modal-content h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn-cancel {
+            background: #6c757d;
+        }
+        
+        .btn-cancel:hover {
+            background: #5a6268;
+        }
+        
+        .btn-save {
+            background: #667eea;
+        }
+        
+        .btn-save:hover {
+            background: #5568d3;
+        }
+        
+        @media (max-width: 768px) {
+            .kids-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Configuration Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAF0rEY7MfKiaonUNmsRSJ7HLLOiSPK5p8",
+            authDomain: "argent-poche-enfant.firebaseapp.com",
+            databaseURL: "https://argent-poche-enfant-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "argent-poche-enfant",
+            storageBucket: "argent-poche-enfant.firebasestorage.app",
+            messagingSenderId: "196977028076",
+            appId: "1:196977028076:web:94bebbefe24b9b02fd2ec9"
+        };
+
+        // Initialiser Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+
+        function App() {
+            const [kids, setKids] = useState({
+                abbie: { name: 'Abbie', balance: 0, interestRate: 5, history: [] },
+                aston: { name: 'Aston', balance: 0, interestRate: 5, history: [] }
+            });
+            
+            const [amounts, setAmounts] = useState({ abbie: '', aston: '' });
+            const [descriptions, setDescriptions] = useState({ abbie: '', aston: '' });
+            const [editModal, setEditModal] = useState(null);
+            const [editData, setEditData] = useState({ amount: '', description: '' });
+
+            // Charger les données depuis Firebase
+            useEffect(() => {
+                const kidsRef = database.ref('kids');
+                kidsRef.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        setKids(data);
+                    }
+                });
+
+                return () => kidsRef.off();
+            }, []);
+
+            // Sauvegarder dans Firebase
+            const saveToFirebase = (updatedKids) => {
+                database.ref('kids').set(updatedKids);
+            };
+
+            const addMoney = (kidId) => {
+                const amount = parseFloat(amounts[kidId]);
+                const description = descriptions[kidId] || 'Ajout d\'argent';
+                
+                if (isNaN(amount) || amount <= 0) {
+                    alert('Veuillez entrer un montant valide');
+                    return;
+                }
+
+                const newKids = { ...kids };
+                const transaction = {
+                    id: Date.now(),
+                    date: new Date().toISOString(),
+                    type: 'add',
+                    amount: amount,
+                    description: description,
+                    balanceAfter: newKids[kidId].balance + amount
+                };
+
+                newKids[kidId].balance += amount;
+                newKids[kidId].history = [transaction, ...(newKids[kidId].history || [])];
+                
+                setKids(newKids);
+                saveToFirebase(newKids);
+                setAmounts({ ...amounts, [kidId]: '' });
+                setDescriptions({ ...descriptions, [kidId]: '' });
+            };
+
+            const removeMoney = (kidId) => {
+                const amount = parseFloat(amounts[kidId]);
+                const description = descriptions[kidId] || 'Retrait d\'argent';
+                
+                if (isNaN(amount) || amount <= 0) {
+                    alert('Veuillez entrer un montant valide');
+                    return;
+                }
+
+                if (amount > kids[kidId].balance) {
+                    alert('Solde insuffisant');
+                    return;
+                }
+
+                const newKids = { ...kids };
+                const transaction = {
+                    id: Date.now(),
+                    date: new Date().toISOString(),
+                    type: 'remove',
+                    amount: amount,
+                    description: description,
+                    balanceAfter: newKids[kidId].balance - amount
+                };
+
+                newKids[kidId].balance -= amount;
+                newKids[kidId].history = [transaction, ...(newKids[kidId].history || [])];
+                
+                setKids(newKids);
+                saveToFirebase(newKids);
+                setAmounts({ ...amounts, [kidId]: '' });
+                setDescriptions({ ...descriptions, [kidId]: '' });
+            };
+
+            const applyInterest = (kidId) => {
+                const newKids = { ...kids };
+                const interest = (newKids[kidId].balance * newKids[kidId].interestRate) / 100;
+                
+                const transaction = {
+                    id: Date.now(),
+                    date: new Date().toISOString(),
+                    type: 'interest',
+                    amount: interest,
+                    description: `Intérêts mensuels (${newKids[kidId].interestRate}%)`,
+                    balanceAfter: newKids[kidId].balance + interest
+                };
+
+                newKids[kidId].balance += interest;
+                newKids[kidId].history = [transaction, ...(newKids[kidId].history || [])];
+                
+                setKids(newKids);
+                saveToFirebase(newKids);
+            };
+
+            const updateInterestRate = (kidId, rate) => {
+                const newKids = { ...kids };
+                newKids[kidId].interestRate = parseFloat(rate) || 0;
+                setKids(newKids);
+                saveToFirebase(newKids);
+            };
+
+            const deleteTransaction = (kidId, transactionId) => {
+                if (!confirm('Êtes-vous sûr de vouloir supprimer cette transaction ?')) {
+                    return;
+                }
+
+                const newKids = { ...kids };
+                const transaction = newKids[kidId].history.find(t => t.id === transactionId);
+                
+                if (transaction) {
+                    // Recalculer le solde
+                    if (transaction.type === 'add' || transaction.type === 'interest') {
+                        newKids[kidId].balance -= transaction.amount;
+                    } else if (transaction.type === 'remove') {
+                        newKids[kidId].balance += transaction.amount;
+                    }
+                    
+                    // Supprimer la transaction
+                    newKids[kidId].history = newKids[kidId].history.filter(t => t.id !== transactionId);
+                    
+                    setKids(newKids);
+                    saveToFirebase(newKids);
+                }
+            };
+
+            const openEditModal = (kidId, transaction) => {
+                setEditModal({ kidId, transaction });
+                setEditData({
+                    amount: transaction.amount.toString(),
+                    description: transaction.description
+                });
+            };
+
+            const saveEdit = () => {
+                const { kidId, transaction } = editModal;
+                const newAmount = parseFloat(editData.amount);
+                
+                if (isNaN(newAmount) || newAmount <= 0) {
+                    alert('Veuillez entrer un montant valide');
+                    return;
+                }
+
+                const newKids = { ...kids };
+                const oldAmount = transaction.amount;
+                const difference = newAmount - oldAmount;
+                
+                // Mettre à jour le solde
+                if (transaction.type === 'add' || transaction.type === 'interest') {
+                    newKids[kidId].balance += difference;
+                } else if (transaction.type === 'remove') {
+                    newKids[kidId].balance -= difference;
+                }
+                
+                // Mettre à jour la transaction
+                const transactionIndex = newKids[kidId].history.findIndex(t => t.id === transaction.id);
+                if (transactionIndex !== -1) {
+                    newKids[kidId].history[transactionIndex] = {
+                        ...transaction,
+                        amount: newAmount,
+                        description: editData.description,
+                        balanceAfter: newKids[kidId].balance
+                    };
+                }
+                
+                setKids(newKids);
+                saveToFirebase(newKids);
+                setEditModal(null);
+            };
+
+            const formatDate = (dateString) => {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            };
+
+            const formatCurrency = (amount) => {
+                return amount.toFixed(2) + ' €';
+            };
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>💰 Argent de Poche</h1>
+                        <p>Gestion financière pour Abbie & Aston</p>
+                    </div>
+
+                    <div className="kids-container">
+                        {Object.entries(kids).map(([kidId, kid]) => (
+                            <div key={kidId} className="kid-card">
+                                <div className="kid-header">
+                                    <div className="kid-name">{kid.name}</div>
+                                    <div className="balance">{formatCurrency(kid.balance)}</div>
+                                </div>
+
+                                <div className="controls">
+                                    <div className="input-group">
+                                        <input
+                                            type="number"
+                                            placeholder="Montant"
+                                            value={amounts[kidId]}
+                                            onChange={(e) => setAmounts({ ...amounts, [kidId]: e.target.value })}
+                                            step="0.01"
+                                        />
+                                    </div>
+                                    <div className="input-group">
+                                        <input
+                                            type="text"
+                                            placeholder="Description"
+                                            value={descriptions[kidId]}
+                                            onChange={(e) => setDescriptions({ ...descriptions, [kidId]: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="btn-group">
+                                    <button className="btn-add" onClick={() => addMoney(kidId)}>
+                                        ➕ Ajouter
+                                    </button>
+                                    <button className="btn-remove" onClick={() => removeMoney(kidId)}>
+                                        ➖ Retirer
+                                    </button>
+                                </div>
+
+                                <div className="interest-section">
+                                    <h3>💹 Intérêts Mensuels</h3>
+                                    <div className="controls">
+                                        <div className="input-group">
+                                            <input
+                                                type="number"
+                                                value={kid.interestRate}
+                                                onChange={(e) => updateInterestRate(kidId, e.target.value)}
+                                                step="0.1"
+                                                placeholder="Taux (%)"
+                                            />
+                                        </div>
+                                    </div>
+                                    <button className="btn-interest" onClick={() => applyInterest(kidId)}>
+                                        Appliquer les intérêts ({kid.interestRate}% = {formatCurrency((kid.balance * kid.interestRate) / 100)})
+                                    </button>
+                                </div>
+
+                                <div className="history">
+                                    <h3>📜 Historique des transactions</h3>
+                                    {kid.history && kid.history.length > 0 ? (
+                                        kid.history.map((transaction) => (
+                                            <div key={transaction.id} className="history-item">
+                                                <div className="history-info">
+                                                    <div className="history-date">
+                                                        {formatDate(transaction.date)}
+                                                    </div>
+                                                    <div className="history-description">
+                                                        {transaction.description}
+                                                    </div>
+                                                    <div className={`history-amount ${
+                                                        transaction.type === 'remove' ? 'amount-negative' : 'amount-positive'
+                                                    }`}>
+                                                        {transaction.type === 'remove' ? '-' : '+'}{formatCurrency(transaction.amount)}
+                                                    </div>
+                                                </div>
+                                                <div className="history-actions">
+                                                    <button 
+                                                        className="btn-small btn-edit"
+                                                        onClick={() => openEditModal(kidId, transaction)}
+                                                    >
+                                                        ✏️
+                                                    </button>
+                                                    <button 
+                                                        className="btn-small btn-delete"
+                                                        onClick={() => deleteTransaction(kidId, transaction.id)}
+                                                    >
+                                                        🗑️
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p style={{ textAlign: 'center', color: '#6c757d', padding: '20px' }}>
+                                            Aucune transaction
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {editModal && (
+                        <div className="modal">
+                            <div className="modal-content">
+                                <h2>Modifier la transaction</h2>
+                                <div style={{ marginBottom: '15px' }}>
+                                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                                        Montant (€)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={editData.amount}
+                                        onChange={(e) => setEditData({ ...editData, amount: e.target.value })}
+                                        step="0.01"
+                                    />
+                                </div>
+                                <div style={{ marginBottom: '15px' }}>
+                                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                                        Description
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editData.description}
+                                        onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                                    />
+                                </div>
+                                <div className="modal-buttons">
+                                    <button className="btn-cancel" onClick={() => setEditModal(null)}>
+                                        Annuler
+                                    </button>
+                                    <button className="btn-save" onClick={saveEdit}>
+                                        Sauvegarder
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

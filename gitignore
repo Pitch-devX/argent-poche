@@ -1,0 +1,34 @@
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Editeurs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environnement local
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Node modules (si vous ajoutez Node.js plus tard)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build
+dist/
+build/
+
+# Fichiers temporaires
+*.tmp
+*.temp
